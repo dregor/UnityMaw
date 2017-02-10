@@ -34,51 +34,9 @@ public class maw : MonoBehaviour
         }
     }
 
-    private IEnumerator Generate()
+    private void MakeAText(Vector3 position, String str)
     {
-        mesh = new Mesh();
-        mesh.name = "polyhedron";
-        GetComponent<MeshFilter>().mesh = mesh;
-        int[] triangles = new int[layers * angles * 6];
-        uint index = 0;
-        for (uint layer = 0; layer < layers; layer++)
-        {
-            foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusOut))
-            {
-                MakeAText(vertice, index.ToString());
-                allVertices.Add(vertice);
-                index++;
-            }
-            foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusIn))
-            {
-                MakeAText(vertice, index.ToString());
-                allVertices.Add(vertice);
-                index++;
-            }
-            mesh.vertices = allVertices.ToArray();
-
-            yield return false;
-
-        }
-        mesh.vertices = allVertices.ToArray();
-
-        for (int i = 0, j = 0; i < angles-1; i++)
-        {
-            triangles[j] = i;
-            triangles[j + 3] = triangles[j + 2] = i + (int)angles;
-            triangles[j + 4] = triangles[j + 1] = i + 1;
-            triangles[j + 5] = i + (int)angles +1;
-            j += 6;
-            mesh.triangles = triangles;
-            yield return false;
-        }
-        mesh.RecalculateNormals();
-
-    }
-
-    private void MakeAText( Vector3 position, String str)
-    {
-        GameObject text = new GameObject("TextMesh: "+ str);
+        GameObject text = new GameObject("TextMesh: " + str);
         text.AddComponent<TextMesh>();
         text.transform.position = position;
         text.transform.parent = this.transform;
@@ -86,6 +44,83 @@ public class maw : MonoBehaviour
         text.GetComponent<TextMesh>().richText = false;
         text.GetComponent<TextMesh>().fontSize = 20;
     }
+
+    private IEnumerator Generate()
+    {
+        mesh = new Mesh();
+        mesh.name = "polyhedron";
+        GetComponent<MeshFilter>().mesh = mesh;
+        int[] triangles = new int[layers * angles * 12];
+        uint index = 0;
+        for (uint layer = 0; layer < layers; layer++)
+        {
+            if (layer == 0)
+            {
+                foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusIn))
+                {
+                    MakeAText(vertice, index.ToString());
+                    allVertices.Add(vertice);
+                    index++;
+                }
+            }
+
+            foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusOut))
+            {
+                MakeAText(vertice, index.ToString());
+                allVertices.Add(vertice);
+                index++;
+            }
+
+            mesh.vertices = allVertices.ToArray();
+
+            yield return false;
+
+        }
+
+        for (uint layer = layers-1; layer > 0; layer--)
+        {
+            foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusIn))
+            {
+                MakeAText(vertice, index.ToString());
+                allVertices.Add(vertice);
+                index++;
+            }
+
+            mesh.vertices = allVertices.ToArray();
+            yield return false;
+        }
+
+        mesh.vertices = allVertices.ToArray();
+        // MAKE face
+        int start = 0;
+        int j = 0;
+        for (int layer = 0; layer < layers*2 -1; layer++)
+        {
+            for (int i = start; i < (start + (int)angles); i++)
+            {
+                triangles[j] = i;
+                if (layer > layers * 2 - 1)
+                    triangles[j + 3] = triangles[j + 2] = i + (int)angles;
+                else
+                    triangles[j + 3] = triangles[j + 2] = i == start + angles - 1 ? start : i + 1;
+
+                if (layer < layers * 2 - 1)
+                    triangles[j + 4] = triangles[j + 1] = i + (int)angles;
+                else
+                    triangles[j + 4] = triangles[j + 1] = i == start + angles - 1 ? start : i + 1;
+                triangles[j + 5] = i == start + angles - 1 ? start + (int)angles : i + (int)angles + 1; 
+                j += 6;
+                mesh.triangles = triangles;
+                yield return false;
+            }
+            start = start + (int)angles;
+        }
+
+        mesh.RecalculateNormals();
+
+    }
+
+
 
     private void OnDrawGizmos()
     {
@@ -113,8 +148,4 @@ public class maw : MonoBehaviour
 
     }
 
-    private void Awake()
-    {
-
-    }
 }
