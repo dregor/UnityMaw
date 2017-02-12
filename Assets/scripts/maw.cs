@@ -15,6 +15,7 @@ public class maw : MonoBehaviour
     public Color dotColor = new Color(150, 150, 150);
     private List<Vector3> allVertices = new List<Vector3>();
     private List<Vector2> uv = new List<Vector2>();
+    private Texture texture;
 
     private Mesh mesh;
 
@@ -55,6 +56,24 @@ public class maw : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
         int[] triangles = new int[layers * angles * 12 + angles * 12];
         uint index = 0;
+
+        float height = texture.height;
+        float oneProcH = height / 100;
+        float partH = height / (float)angles;
+        float H = partH / oneProcH / 100;
+
+        float width = texture.width;
+        float oneProcW = width / 100;
+        float partW = width / ((float)layers * 2 + 2);
+        float W = partW / oneProcW / 100;
+
+        Debug.Log("width");
+        Debug.Log(width);
+        Debug.Log(W);
+
+        Debug.Log("height");
+        Debug.Log(height);
+        Debug.Log(H);
         for (uint layer = 0; layer < layers*2; layer++)
         {
             if (layer == 0)
@@ -62,7 +81,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusIn))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2((float)vertice.x, (float)vertice.y));
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
+                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count-1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -74,7 +94,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusOut))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2((float)vertice.x, (float)vertice.y));
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
+                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -90,7 +111,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(antiLayer, radiusIn))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2((float)vertice.x, (float)vertice.y));
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
+                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 13].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -159,7 +181,7 @@ public class maw : MonoBehaviour
         if (radiusIn > radiusOut) { radiusIn = radiusOut / 2; }
         if (radiusIn < 0.1f) { radiusIn = 0.1f; }
         if (radiusOut < 0.2f) { radiusOut = 0.2f; }
-
+        texture = gameObject.GetComponent<MeshRenderer>().material.mainTexture;  
         //StartCoroutine(Generate());
         Generate();
     }
