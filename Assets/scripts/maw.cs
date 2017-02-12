@@ -13,6 +13,7 @@ public class maw : MonoBehaviour
     public float depth = 10f;
 
     public Color dotColor = new Color(150, 150, 150);
+    public float dotRadius = 0.03f;
     private List<Vector3> allVertices = new List<Vector3>();
     private List<Vector2> uv = new List<Vector2>();
     private Texture texture;
@@ -64,7 +65,7 @@ public class maw : MonoBehaviour
 
         float width = texture.width;
         float oneProcW = width / 100;
-        float partW = width / ((float)layers * 2 + 2);
+        float partW = width / ((float)layers * 2);
         float W = partW / oneProcW / 100;
 
         Debug.Log("width");
@@ -81,8 +82,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusIn))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
-                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count-1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layer * angles)));
+                    //MakeAText(vertice, index.ToString()+" - "+uv[uv.Count-1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -94,8 +95,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(layer, radiusOut))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
-                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layer * angles)));
+                    //MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 1].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -111,8 +112,8 @@ public class maw : MonoBehaviour
                 foreach (Vector3 vertice in layerOfPolyhedron(antiLayer, radiusIn))
                 {
                     allVertices.Add(vertice);
-                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layers * angles)));
-                    MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 13].y.ToString());
+                    uv.Add(new Vector2(W * (float)layer, H * ((float)index - layer * angles)));
+                    //MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 13].y.ToString());
                     //MakeAText(vertice, index.ToString());
                     index++;
                     mesh.vertices = allVertices.ToArray();
@@ -171,7 +172,7 @@ public class maw : MonoBehaviour
         Gizmos.color = dotColor;
         for (int i = 0; i < mesh.vertices.Length; i++)
         {
-            Gizmos.DrawSphere(transform.TransformPoint(mesh.vertices[i]), 0.2f);
+            Gizmos.DrawSphere(transform.TransformPoint(mesh.vertices[i]), dotRadius);
         }
     }
 
