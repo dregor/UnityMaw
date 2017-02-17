@@ -3,7 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+
 public class maw : MonoBehaviour
 {
     public uint layers = 1;
@@ -26,12 +28,13 @@ public class maw : MonoBehaviour
         {
             yield return new Vector3(r * Mathf.Sin(2 * i * Mathf.PI / n), r * Mathf.Cos(2 * i * Mathf.PI / n), z);
         }
+        yield return new Vector3(r * Mathf.Sin(0), r * Mathf.Cos(0), z);
     }
 
     private IEnumerable<Vector3> layerOfPolyhedron(uint layer, float radius)
     {
         float z = 0f;
-        if (layer <= 1)
+        if ((layer <= 1)||(layer == layers * 2))
             z = 0;
         else if (layer < layers + 1)
             z = (layer - 1) * depth / layers;
@@ -78,7 +81,7 @@ public class maw : MonoBehaviour
         float oneProcW = width / 100;
         float partW = width / ((float)layers * 2);
         float W = partW / oneProcW / 100;
-
+         
         int boxSizeX = 10;
         int boxSizeY = 10;
         Color[] greenBox = new Color[boxSizeX*boxSizeY];
@@ -87,7 +90,7 @@ public class maw : MonoBehaviour
         Texture2D textureToSave = new Texture2D((int)width, (int)height, TextureFormat.RGB24, false);
         textureToSave.SetPixels(texture.GetPixels());
 
-        for (uint layer = 0; layer < layers*2 ; layer++)
+        for (uint layer = 0; layer < layers*2 + 1; layer++)
         {
             float radius = 0;
             if ((layer == 0)||(layer > layers))
@@ -98,58 +101,65 @@ public class maw : MonoBehaviour
             foreach (Vector3 vertice in layerOfPolyhedron(layer, radius))
             {
                 allVertices.Add(vertice);
-                uv.Add(new Vector2(W * (float)layer, H * ((float)index - (layer + 1) * angles)));
-                textureToSave.SetPixels((int)((uint)partW * (layer)), (int)(partH * (index - (layer) * angles)), boxSizeX, boxSizeY, greenBox);
+                //uv.Add(new Vector2(W * (float)layer, H * ((float)index - (layer + 1) * angles)));
+                //textureToSave.SetPixels((int)((uint)partW * (layer)), (int)(partH * (index - (layer) * angles)), boxSizeX, boxSizeY, greenBox);
                 //Debug.Log(((uint)partW * layer).ToString() + " - " + (partH * (index - (layer + 1) * angles)).ToString());
                 //MakeAText(vertice, index.ToString()+" - "+uv[uv.Count - 1].x.ToString()+"/"+uv[uv.Count - 13].y.ToString());
-                //MakeAText(vertice, index.ToString());
+               if (layer>layers)
+                    MakeAText(vertice, index.ToString());
                 index++;
-                mesh.vertices = allVertices.ToArray();
+                //mesh.vertices = allVertices.ToArray();
                 //yield return false;
             }
+
             //uv.Add(new Vector2(W * (float)layer, H * ((float)index - (layer + 1) * angles)));
         }
        // uv.Add(new Vector2(W * ((float)layers*2), H * ((float)index - (((float)layers * 2) + 1) * angles)));
 
         mesh.vertices = allVertices.ToArray();
 
-        byte[] bytes = textureToSave.EncodeToJPG();
-        Destroy(textureToSave);
-        File.WriteAllBytes(Application.dataPath + "/../SavedImage.jpg", bytes);
+        //byte[] bytes = textureToSave.EncodeToJPG();
+        //Destroy(textureToSave);
+        //File.WriteAllBytes(Application.dataPath + "/../SavedImage.jpg", bytes);
 
         int start = 0;
         int j = 0;
-        for (int layer = 0; layer <= layers * 2 -1; layer++)
+        // = layers * 2
+        for (int layer = 0; layer <= layers * 2 ; layer++)
         {
             for (int i = start; i < (start + (int)angles); i++)
             {
 
                 triangles[j] = i;
-                triangles[j + 3] = triangles[j + 2] = i == start + angles - 1 ? start : i + 1;
+                //triangles[j + 3] = triangles[j + 2] = i == start + angles - 1 ? start : i + 1;
+                triangles[j + 3] = triangles[j + 2] = i + 1;
+                triangles[j + 4] = triangles[j + 1] = i + (int)angles+1;
+                triangles[j + 5] = i + (int)angles + 2;
 
-                if (layer < layers * 2 -1)
-                {
-                    triangles[j + 4] = triangles[j + 1] = i + (int)angles;
-                    triangles[j + 5] = i == start + angles - 1 ? start + (int)angles : i + (int)angles + 1;
-                }
-                else
-                if (layer == layers * 2 -1)
-                {
-                    triangles[j + 4] = triangles[j + 1] = i - start;
-                    triangles[j + 5] = i == start + angles - 1 ? 0 : i - start + 1;
-                }
+                //if (layer < layers * 2 -1)
+                //{
+                //    triangles[j + 4] = triangles[j + 1] = i + (int)angles;
+                //    triangles[j + 5] = i == start + angles - 1 ? start + (int)angles : i + (int)angles + 1;
+                //}
+                //else
+                //if (layer == layers * 2 -1)
+                //{
+                //    triangles[j + 4] = triangles[j + 1] = i - start;
+                //    triangles[j + 5] = i == start + angles - 1 ? 0 : i - start + 1;
+                //}
 
-                //Debug.Log("layer: " + layer.ToString());
-                //Debug.Log(triangles[j].ToString() + triangles[j + 1].ToString() + triangles[j + 2].ToString());
-                //Debug.Log(triangles[j+3].ToString() + triangles[j + 4].ToString() + triangles[j + 5].ToString());
-                mesh.triangles = triangles;
+                Debug.Log("layer: " + layer.ToString());
+                Debug.Log(triangles[j].ToString() +" "+ triangles[j + 1].ToString() + " " + triangles[j + 2].ToString());
+                Debug.Log(triangles[j+3].ToString() + " " + triangles[j + 4].ToString() + " " + triangles[j + 5].ToString());
+                //mesh.triangles = triangles;
                 j += 6;
                 //yield return wait;
 
             }
             start += (int)angles;
         }
-        mesh.uv = uv.ToArray();
+        mesh.triangles = triangles;
+        //mesh.uv = uv.ToArray();
         mesh.RecalculateNormals();
     }
 
