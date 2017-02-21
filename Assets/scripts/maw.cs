@@ -2,9 +2,10 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using geo;
+
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-
 public class maw : MonoBehaviour
 {
     public uint layers = 1;
@@ -21,14 +22,7 @@ public class maw : MonoBehaviour
     private Texture2D texture;
     private Mesh mesh;
 
-    private static IEnumerable<Vector3> polyhedron(float r, uint n, float z)
-    {
-        for (int i = 0; i < n; i++)
-        {
-            yield return new Vector3(r * Mathf.Sin(2 * i * Mathf.PI / n), r * Mathf.Cos(2 * i * Mathf.PI / n), z);
-        }
-        yield return new Vector3(r * Mathf.Sin(0), r * Mathf.Cos(0), z);
-    }
+
 
     private IEnumerable<Vector3> layerOfPolyhedron(uint layer, float radius)
     {
@@ -42,7 +36,7 @@ public class maw : MonoBehaviour
         else if (layer > layers + 1)
             z = ( layers - (layer - layers) ) * depth / layers;
 
-        foreach (Vector3 vertice in polyhedron(radius, angles, z))
+        foreach (Vector3 vertice in Geo.polyhedron(radius, angles, z))
         {
             yield return vertice;
         }
