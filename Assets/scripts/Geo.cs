@@ -4,9 +4,9 @@ using UnityEngine;
 namespace geo
 {
 
-    public class Geo
+    public static class Geo
     {
-        public static IEnumerable<Vector3> polyhedron(float r, uint n, float z)
+        public static IEnumerable<Vector3> polyhedron(float r, uint n, float z = 0)
         {
             for (int i = 0; i < n; i++)
             {
@@ -20,13 +20,13 @@ namespace geo
             return Mathf.Sqrt(Mathf.Pow(pt2[0] - pt1[0], 2) + Mathf.Pow(pt2[1] - pt1[1], 2));
         }
 
-        public static float alpha(Vector2 pt, Vector2 A)
+        public static float alpha(Vector2 center, Vector2 A)
         {
             if (A == new Vector2(0, 0))
                 return 0;
             else
             {
-                A = A - pt;
+                A = A - center;
                 return Mathf.Asin(length(new Vector2(0, A[1]), A) / length(A, new Vector2(0, 0)));
             }
         }
@@ -50,6 +50,16 @@ namespace geo
             float dx = pt[0] + Mathf.Cos(2 * Mathf.PI - alpha) * add[0] + Mathf.Sin(2 * Mathf.PI - alpha) * add[1];
             float dy = pt[1] + Mathf.Cos(2 * Mathf.PI - alpha) * add[1] - Mathf.Sin(2 * Mathf.PI - alpha) * add[0];
             return new Vector2(dx, dy);
+        }
+
+        public static Vector2 additive(Vector2 center, Vector2 pt, Vector2 add)
+        {
+            return additive(alpha(center, pt),pt,add);
+        }
+
+        public static Vector2 additive(Vector2 pt, Vector2 add)
+        {
+            return additive(alpha(new Vector2(0,0), pt), pt, add);
         }
 
         public static int quarter(Vector2 center, Vector2 pt)

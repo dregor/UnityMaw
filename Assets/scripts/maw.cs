@@ -8,21 +8,19 @@ using geo;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class maw : MonoBehaviour
 {
-    public uint layers = 1;
+    private uint _layers = 2;    
+    public uint layers
+    {
+        get { return _layers; }
+        set { _layers = value; Generate(); }
+    }
     public uint angles = 5;
     public float radiusOut = 20f;
     public float radiusIn = 10f;
     public float depth = 10f;
     
-    public Color dotColor = new Color(150, 150, 150);
-    public float dotRadius = 0.03f;
-
-    private List<Vector3> allVertices = new List<Vector3>();
-    private List<Vector2> uv = new List<Vector2>();
     private Texture2D texture;
     private Mesh mesh;
-
-
 
     private IEnumerable<Vector3> layerOfPolyhedron(uint layer, float radius)
     {
@@ -54,26 +52,25 @@ public class maw : MonoBehaviour
     }
 
     private void Generate()//private IEnumerator Generate()// 
-    {
+    { 
+        //float deltaRad = radiusOut - radiusIn;
         //WaitForSeconds wait = new WaitForSeconds(0.001f);
-        mesh = new Mesh();
-        mesh.name = "polyhedron";
-        GetComponent<MeshFilter>().mesh = mesh;
         int[] triangles = new int[(layers+2) * angles * 12];
-        
-
-        float deltaRad = radiusOut - radiusIn;
+        List<Vector3> allVertices = new List<Vector3>();
+        List<Vector2> uv = new List<Vector2>();
 
         float height = texture.height;
         float oneProcH = height / 100;
         float partH = height / ((float)angles);
         float H = partH / oneProcH / 100;
-
         float width = texture.width;
         float oneProcW = width / 100;
         float partW = width / ((float)layers * 2);
         float W = partW / oneProcW / 100;
-         
+        int X = 0;
+        int Y = 0;
+    
+
         int boxSizeX = 10;
         int boxSizeY = 10;
         Color[] greenBox = new Color[boxSizeX*boxSizeY];
@@ -95,16 +92,21 @@ public class maw : MonoBehaviour
             {
                 allVertices.Add(vertice);
                 uv.Add(new Vector2(W * (float)layer, H * (float)index));
-                textureToSave.SetPixels((int)((uint)partW * layer), (int)(partH * index), boxSizeX, boxSizeY, greenBox);
+                X = (int)Mathf.Clamp(((uint)partW * layer),0, width - boxSizeX);
+                Y = (int)Mathf.Clamp((partH * index),0, height - boxSizeY);
+                //if (X > width - boxSizeX)
+                //    X = (int)width - boxSizeX;
+                //if (Y >= height - boxSizeY)
+                //    Y = (int)height - boxSizeY;
+                textureToSave.SetPixels(X, Y, boxSizeX, boxSizeY, greenBox);
                 index++;
                 //mesh.vertices = allVertices.ToArray();
                 //yield return false;
             }
-            Debug.Log(index);
         }
 
-
         mesh.vertices = allVertices.ToArray();
+        mesh.uv = uv.ToArray();
 
         byte[] bytes = textureToSave.EncodeToJPG();
         Destroy(textureToSave);
@@ -128,32 +130,21 @@ public class maw : MonoBehaviour
             start += (int)angles + 1;
         }
         mesh.triangles = triangles;
-        mesh.uv = uv.ToArray();
         mesh.RecalculateNormals();
     }
-
-
-    private void OnDrawGizmos()
-    {
-        if (mesh == null || mesh.vertices.Length <= 0) { return; }
-        Gizmos.color = dotColor;
-        for (int i = 0; i < mesh.vertices.Length; i++)
-        {
-            Gizmos.DrawSphere(transform.TransformPoint(mesh.vertices[i]), dotRadius);
-        }
-    }
-
 
     void Start()
     {
         if (radiusIn > radiusOut) { radiusIn = radiusOut / 2; }
         if (radiusIn < 0.1f) { radiusIn = 0.1f; }
         if (radiusOut < 0.2f) { radiusOut = 0.2f; }
-        texture = gameObject.GetComponent<MeshRenderer>().material.mainTexture as Texture2D;  
+        texture = gameObject.GetComponent<MeshRenderer>().material.mainTexture as Texture2D;
+        mesh = new Mesh();
+        mesh.name = "polyhedron";
+        GetComponent<MeshFilter>().mesh = mesh;
         //StartCoroutine(Generate());
         Generate();
     }
-
 
     void Update()
     {
