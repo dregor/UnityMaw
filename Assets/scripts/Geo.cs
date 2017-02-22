@@ -6,7 +6,7 @@ namespace geo
 
     public static class Geo
     {
-        public static IEnumerable<Vector3> polyhedron(float r, uint n, float z = 0)
+        public static IEnumerable<Vector3> polyhedron(float r, int n, float z = 0)
         {
             for (int i = 0; i < n; i++)
             {

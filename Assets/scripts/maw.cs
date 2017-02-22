@@ -8,17 +8,43 @@ using geo;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class maw : MonoBehaviour
 {
-    private uint _layers = 2;    
-    public uint layers
+    [SerializeField, Candlelight.PropertyBackingField]
+    private int m_layers = 2;    
+    public int layers
     {
-        get { return _layers; }
-        set { _layers = value; Generate(); }
+        get { return m_layers; }
+        set { m_layers = Mathf.Clamp(value,1,100); Generate(); }
     }
-    public uint angles = 5;
-    public float radiusOut = 20f;
-    public float radiusIn = 10f;
-    public float depth = 10f;
-    
+
+    [SerializeField, Candlelight.PropertyBackingField]
+    private int m_angles = 5;
+    public int angles
+    {
+        get { return m_angles; }
+        set { m_angles = Mathf.Clamp(value,3,100); Generate(); }
+    }
+    [SerializeField, Candlelight.PropertyBackingField]
+    private float m_radiusOut = 20f;
+    public float radiusOut
+    {
+        get { return m_radiusOut; }
+        set { m_radiusOut = Mathf.Clamp(value,0,1000); Generate(); }
+    }
+    [SerializeField, Candlelight.PropertyBackingField]
+    private float m_radiusIn = 10f;
+    public float radiusIn
+    {
+        get { return m_radiusIn; }
+        set { m_radiusIn = Mathf.Clamp(value, 0, 1000); Generate(); }
+    }
+    [SerializeField, Candlelight.PropertyBackingField]
+    private float m_depth = 10f;
+    public float depth
+    {
+        get { return m_depth; }
+        set { m_depth = Mathf.Clamp(value, 0, 1000); Generate(); }
+    }
+
     private Texture2D texture;
     private Mesh mesh;
 
@@ -52,7 +78,8 @@ public class maw : MonoBehaviour
     }
 
     private void Generate()//private IEnumerator Generate()// 
-    { 
+    {
+        mesh.Clear();
         //float deltaRad = radiusOut - radiusIn;
         //WaitForSeconds wait = new WaitForSeconds(0.001f);
         int[] triangles = new int[(layers+2) * angles * 12];
@@ -90,15 +117,14 @@ public class maw : MonoBehaviour
 
             foreach (Vector3 vertice in layerOfPolyhedron(layer, radius))
             {
-                allVertices.Add(vertice);
-                uv.Add(new Vector2(W * (float)layer, H * (float)index));
                 X = (int)Mathf.Clamp(((uint)partW * layer),0, width - boxSizeX);
-                Y = (int)Mathf.Clamp((partH * index),0, height - boxSizeY);
-                //if (X > width - boxSizeX)
-                //    X = (int)width - boxSizeX;
-                //if (Y >= height - boxSizeY)
-                //    Y = (int)height - boxSizeY;
+                Y = (int)Mathf.Clamp((partH * index),0, height - boxSizeY);            
                 textureToSave.SetPixels(X, Y, boxSizeX, boxSizeY, greenBox);
+
+                Vector2 Addiction = Geo.additive(new Vector2(vertice.x, vertice.y), new Vector2(0, 7 * Mathf.PerlinNoise(vertice.x/100 * (layer == layers * 2? 0 : layer), (vertice.y / 100 * (layer == layers * 2 ? 0 : layer)))));
+
+                allVertices.Add(new Vector3(Addiction.x, Addiction.y, vertice.z));
+                uv.Add(new Vector2(W * (float)layer, H * (float)index));
                 index++;
                 //mesh.vertices = allVertices.ToArray();
                 //yield return false;
